@@ -1,28 +1,73 @@
 apply plugin: 'com.android.application'
 
+task processWithJavassist << {
+    //项目编译class所在目录
+    String classPath = file('build/intermediates/classes/debug')
+    String hackBuildPach = project(':hackdex').buildDir.absolutePath + '/intermediates/classes/debug'
+    String resourcePath = file('src/main/java/com/hotfix')
+    def file = file("../patch.properties")
+    List<String> lines = file.readLines()
+    for (s in lines) {
+        if (s.startsWith("#")) {
+            continue;
+        }
+        com.groovy.BuildGroovy.process(resourcePath,classPath,hackBuildPach, s)
+    }
+}
+
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    compileSdkVersion Integer.parseInt(project.ANDROID_BUILD_SDK_VERSION)
+    buildToolsVersion project.ANDROID_BUILD_TOOLS_VERSION
 
     defaultConfig {
         applicationId "com.hotfix"
         minSdkVersion 15
-        targetSdkVersion 23
+        targetSdkVersion 21
         versionCode 1
         versionName "1.0"
     }
     buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    applicationVariants.all { variant ->
+        variant.dex.dependsOn processWithJavassist //在执行dx命令之前将代码打入到class中
+    }
 }
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
     compile project(':hotfixlib')
+}
+
+def getSdkDir = {
+    def file = file("../local.properties")
+    Properties p = new Properties()
+    file.withInputStream { stream ->
+        p.load(stream)
+    }
+    return p.'sdk.dir'
+}
+
+task createHackJar {
+    'jar cvf app/src/main/assets/hack.jar com/hackdex/*'.execute()
+}
+
+task copyHackDex(type: Exec, dependsOn: createHackJar) {
+    workingDir getSdkDir() + '\\build-tools\\' + project.ANDROID_BUILD_TOOLS_VERSION
+    commandLine 'cmd', '/c', 'dx --dex --output ' + project.rootDir + '/app/src/main/assets/hack_dex.jar ' + project.rootDir + '/app/src/main/assets/hack.jar'
+}
+
+task createHackDex(dependsOn: copyHackDex) << {
+    def file = file('src/main/assets/hack.jar')
+    if (file.exists()) {
+        file.delete()
+    }
 }

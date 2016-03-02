@@ -4,6 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/HotFix.iml" filepath="$PROJECT_DIR$/HotFix.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/buildsrc/buildsrc.iml" filepath="$PROJECT_DIR$/buildsrc/buildsrc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hackdex/hackdex.iml" filepath="$PROJECT_DIR$/hackdex/hackdex.iml" />
       <module fileurl="file://$PROJECT_DIR$/hotfixlib/hotfixlib.iml" filepath="$PROJECT_DIR$/hotfixlib/hotfixlib.iml" />
     </modules>
   </component>
