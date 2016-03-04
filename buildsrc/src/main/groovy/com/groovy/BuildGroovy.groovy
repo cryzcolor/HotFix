@@ -12,11 +12,10 @@ public class BuildGroovy {
      * @param resourcePath 项目源码所在目录
      * @param buildDir 项目编译class所在目录
      * @param hackBuildDir hackdex的class所在目录
-     * @param fixedClass 修复的类名
+     * @param patchConfigFile 修复类的配置文件
      */
-    public
-    static void process(String resourcePath, String buildDir, String hackBuildDir, String fixedClass) {
-        List<String> invokeClass = getInvokedClass(resourcePath, fixedClass);
+    public static void process(String resourcePath, String buildDir, String hackBuildDir, File patchConfigFile) {
+        List<String> invokeClass = getInvokedClass(resourcePath, patchConfigFile);
         invokeClass.each { String string ->
             insertCode(buildDir, hackBuildDir, "com.hotfix." + string)
         }
@@ -25,15 +24,21 @@ public class BuildGroovy {
     /**
      * 获取调用到修复类的类集合
      * @param resourcePath 项目源码所在目录
-     * @param fixedClass 修复的类名
+     * @param patchConfigFile 修复类的配置文件
      * @return
      */
-    private static List<String> getInvokedClass(String resourcePath, String fixedClass) {
+    private static List<String> getInvokedClass(String resourcePath,  File patchConfigFile) {
         List<String> invokeClass = new ArrayList<String>();
-        String packageName = fixedClass.substring(0, fixedClass.lastIndexOf("."));
-        String className = fixedClass.substring(fixedClass.lastIndexOf(".") + 1);
-        def files = new File(resourcePath).listFiles()
-        getAllInvokedClass(packageName, className, files, invokeClass);
+        List<String> lines = patchConfigFile.readLines()
+        for (s in lines) {
+            if (s.startsWith("#")) {
+                continue;
+            }
+            String packageName = s.substring(0, s.lastIndexOf("."));
+            String className = s.substring(s.lastIndexOf(".") + 1);
+            def files = new File(resourcePath).listFiles()
+            getAllInvokedClass(packageName, className, files, invokeClass);
+        }
         return invokeClass;
     }
 
@@ -44,15 +49,14 @@ public class BuildGroovy {
      * @param file 文件
      * @param invokeClass 调用到修复类的类集合
      */
-    private
-    static void getAllInvokedClass(String packageName, String className, File[] files, List<String> invokeClass) {
+    private static void getAllInvokedClass(String packageName, String className, File[] files, List<String> invokeClass) {
         files.each { File file ->
             if (file.isFile()) {
                 def fileName = file.name.substring(0, file.name.indexOf("."));
                 if (fileName != className) {
                     List<String> lines = file.readLines()
                     for (s in lines) {
-                        if (s.contains(packageName) || s.contains(className)) {
+                        if ((s.contains(packageName) || s.contains(className)) && !invokeClass.contains(fileName)) {
                             invokeClass.add(fileName)
                             break;
                         }
