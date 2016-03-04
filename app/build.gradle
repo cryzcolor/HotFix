@@ -66,7 +66,7 @@ task createPatchJar <<{
             if (line.startsWith("#")) {
                 continue;
             }
-            ('jar cvf app/src/main/assets/patch.jar ' + project.rootDir + '/app/build/intermediates/classes/debug/' + line.replace(".", "/") + ".class").execute()
+            ('jar cvf app/src/main/assets/patch.jar ' +  line.replace(".", "/") + ".class").execute()
         }
     }
 }
@@ -79,6 +79,6 @@ task createPatchDex(type: Exec, dependsOn: createPatchJar) {
 task createPatch(dependsOn: createPatchDex) << {
     def file = file('src/main/assets/patch.jar')
     if (file.exists()) {
-        //file.delete()
+        file.delete()
     }
 }
