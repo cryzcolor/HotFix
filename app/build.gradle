@@ -62,8 +62,11 @@ task createPatchJar <<{
     def file = file("../patch.properties")
     if (file) {
         List<String> lines = file.readLines();
-        lines.each { String line ->
-            ('jar cvf app/src/main/assets/patch.jar ' + project.rootDir + '/build/intermediates/classes/debug/' + line.replace(".", "/") + ".class").execute()
+        for (line in lines) {
+            if (line.startsWith("#")) {
+                continue;
+            }
+            ('jar cvf app/src/main/assets/patch.jar ' + project.rootDir + '/app/build/intermediates/classes/debug/' + line.replace(".", "/") + ".class").execute()
         }
     }
 }
@@ -76,6 +79,6 @@ task createPatchDex(type: Exec, dependsOn: createPatchJar) {
 task createPatch(dependsOn: createPatchDex) << {
     def file = file('src/main/assets/patch.jar')
     if (file.exists()) {
-        file.delete()
+        //file.delete()
     }
 }

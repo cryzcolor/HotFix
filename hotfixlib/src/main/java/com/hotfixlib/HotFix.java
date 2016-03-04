@@ -27,7 +27,8 @@ public class HotFix {
                 } else {
                     injectBelowApiLevel14(context, patchDexFile);
                 }
-            } catch (Throwable th) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

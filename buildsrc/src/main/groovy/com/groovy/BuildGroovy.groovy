@@ -17,7 +17,7 @@ public class BuildGroovy {
     public static void process(String resourcePath, String buildDir, String hackBuildDir, File patchConfigFile) {
         List<String> invokeClass = getInvokedClass(resourcePath, patchConfigFile);
         invokeClass.each { String string ->
-            insertCode(buildDir, hackBuildDir, "com.hotfix." + string)
+            insertCode(buildDir, hackBuildDir, string)
         }
     }
 
@@ -27,7 +27,7 @@ public class BuildGroovy {
      * @param patchConfigFile 修复类的配置文件
      * @return
      */
-    private static List<String> getInvokedClass(String resourcePath,  File patchConfigFile) {
+    private static List<String> getInvokedClass(String resourcePath, File patchConfigFile) {
         List<String> invokeClass = new ArrayList<String>();
         List<String> lines = patchConfigFile.readLines()
         for (s in lines) {
@@ -52,14 +52,13 @@ public class BuildGroovy {
     private static void getAllInvokedClass(String packageName, String className, File[] files, List<String> invokeClass) {
         files.each { File file ->
             if (file.isFile()) {
-                def fileName = file.name.substring(0, file.name.indexOf("."));
-                if (fileName != className) {
-                    List<String> lines = file.readLines()
-                    for (s in lines) {
-                        if ((s.contains(packageName) || s.contains(className)) && !invokeClass.contains(fileName)) {
-                            invokeClass.add(fileName)
-                            break;
-                        }
+                def fileName = file.path.substring(file.path.indexOf("\\src\\main\\java\\") + 15, file.path.indexOf("."))
+                fileName = fileName.replace("\\", ".")
+                List<String> lines = file.readLines()
+                for (s in lines) {
+                    if ((s.contains(packageName) || s.contains(className)) && !invokeClass.contains(fileName)) {
+                        invokeClass.add(fileName)
+                        break;
                     }
                 }
             } else {

@@ -1,7 +1,6 @@
 package com.hotfixlib;
 
 import android.content.Context;
-import android.os.Environment;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,16 +17,14 @@ public class Utils {
      *
      * @param context
      * @param filename
-     * @param des
      */
-    public static void copyAssertFileToSD(Context context, String filename, String des) {
+    public static void copyAssertFileToSD(Context context, String filename) {
         InputStream inputStream = null;
         FileOutputStream fileOutputStream = null;
         try {
-            File file = new File(Environment.getExternalStorageDirectory()
-                    .toString() + File.separator + des);
+            File file = new File(context.getDir("dex", Context.MODE_PRIVATE), filename);
             if (file.exists()) {
-                return;
+                file.delete();
             }
             inputStream = context.getAssets().open(filename);
             file.createNewFile();
