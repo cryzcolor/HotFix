@@ -4,6 +4,7 @@ import android.content.Context;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
 
@@ -41,14 +42,14 @@ public class Utils {
             if (inputStream != null) {
                 try {
                     inputStream.close();
-                } catch (Exception e) {
+                } catch (IOException  e) {
                     e.printStackTrace();
                 }
             }
             if (fileOutputStream != null) {
                 try {
                     fileOutputStream.close();
-                } catch (Exception e) {
+                } catch (IOException  e) {
                     e.printStackTrace();
                 }
             }

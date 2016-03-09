@@ -5,6 +5,9 @@ import javassist.CtClass
 import javassist.CtMethod
 import javassist.CtNewMethod
 
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
+
 public class BuildGroovy {
 
     /**
@@ -85,6 +88,55 @@ public class BuildGroovy {
         CtMethod mthd = CtNewMethod.make("private void toHack() {com.hackdex.HackDex.toHack();}", c);
         c.addMethod(mthd);
         c.writeFile(buildDir)
+    }
+
+    /**
+     * 文件复制
+     * @param originalPath 原始文件目录
+     * @param targetPath 目标文件目录
+     */
+    public static void copyFile(String originalPath, String targetPath) {
+        FileInputStream fileInputStream = null;
+        FileOutputStream fileOutputStream = null;
+        try {
+            // 获取源文件和目标文件的输入输出流
+            fileInputStream = new FileInputStream(originalPath);
+            File targetFile = new File(targetPath);
+            if (!targetFile.exists()) {
+                targetFile.getParentFile().mkdirs()
+                targetFile.createNewFile();
+            }
+            fileOutputStream = new FileOutputStream(targetFile);
+            // 获取输入输出通道
+            FileChannel fileChannelIn = fileInputStream.getChannel();
+            FileChannel fileChannelOut = fileOutputStream.getChannel();
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            while (fileChannelIn.read(buffer) != -1) {
+                // clear方法重设缓冲区，使它可以接受读入的数据
+                buffer.clear();
+                // flip方法让缓冲区可以将新读入的数据写入另一个通道
+                buffer.flip();
+                fileChannelOut.write(buffer);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (fileInputStream != null) {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (fileOutputStream != null) {
+                try {
+                    fileOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
 }
