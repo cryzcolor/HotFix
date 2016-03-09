@@ -5,9 +5,6 @@ import javassist.CtClass
 import javassist.CtMethod
 import javassist.CtNewMethod
 
-import java.nio.ByteBuffer
-import java.nio.channels.FileChannel
-
 public class BuildGroovy {
 
     /**
@@ -96,47 +93,26 @@ public class BuildGroovy {
      * @param targetPath 目标文件目录
      */
     public static void copyFile(String originalPath, String targetPath) {
-        FileInputStream fileInputStream = null;
-        FileOutputStream fileOutputStream = null;
-        try {
-            // 获取源文件和目标文件的输入输出流
-            fileInputStream = new FileInputStream(originalPath);
-            File targetFile = new File(targetPath);
-            if (!targetFile.exists()) {
-                targetFile.getParentFile().mkdirs()
-                targetFile.createNewFile();
-            }
-            fileOutputStream = new FileOutputStream(targetFile);
-            // 获取输入输出通道
-            FileChannel fileChannelIn = fileInputStream.getChannel();
-            FileChannel fileChannelOut = fileOutputStream.getChannel();
-            ByteBuffer buffer = ByteBuffer.allocate(1024);
-            while (fileChannelIn.read(buffer) != -1) {
-                // clear方法重设缓冲区，使它可以接受读入的数据
-                buffer.clear();
-                // flip方法让缓冲区可以将新读入的数据写入另一个通道
-                buffer.flip();
-                fileChannelOut.write(buffer);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (fileInputStream != null) {
-                try {
-                    fileInputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        def originalFile = new File(originalPath)
+        def targetFile = new File(targetPath)
 
-            if (fileOutputStream != null) {
-                try {
-                    fileOutputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        if (!targetFile.getParentFile().exists()) {
+            targetFile.getParentFile().mkdirs()
         }
+        if (!targetFile.exists()) {
+            targetFile.createNewFile()
+        }
+        def fout = new FileOutputStream(targetFile);
+        def fin = new FileInputStream(originalFile);
+
+        byte[] buffer = new byte[1024];
+        def len = 0;
+        while ((len = fin.read(buffer)) != -1) {
+            fout.write(buffer, 0, len);
+        }
+        fout.flush();
+        fout.close();
+        fin.close();
     }
 
 }

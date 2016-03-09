@@ -52,12 +52,12 @@ def getSdkDir = {
     return p.'sdk.dir'
 }
 
-task createHack(type: Exec){
+task createHack(type: Exec) {
     workingDir getSdkDir() + '\\build-tools\\' + project.BUILD_TOOLS_VERSION
     commandLine 'cmd', '/c', 'dx --dex --output ' + project.rootDir + '/app/src/main/assets/hack_dex.jar ' + project.rootDir + '/hackdex/build/intermediates/bundles/debug/classes.jar'
 }
 
-task createPatchJar()<< {
+task copyPatchClass() << {
     def file = file("../patch.properties")
     if (file) {
         List<String> lines = file.readLines();
@@ -67,21 +67,32 @@ task createPatchJar()<< {
             }
             def className = line.replace('.', '/') + '.class'
             def classPath = project.rootDir.path + '/app/build/intermediates/classes/debug/' + className
-            println(classPath)
-            println(project.rootDir.path + '/app/src/main/assets/' + className)
-            com.groovy.BuildGroovy.copyFile(classPath, project.rootDir.path + '/app/src/main/assets/' + className)
+            com.groovy.BuildGroovy.copyFile(classPath, project.rootDir.path + '/app/patch/' + className)
         }
     }
 }
 
-task createPatchDex(dependsOn: createPatchJar)<< {
+task createPatchJar(type: Jar, dependsOn: copyPatchClass) {
+    baseName 'patch'
+    from('patch/com/hotfix/demo/text/')
+    into('app/src/main/assets/')
+    //commandLine 'cmd','/k','d:'
+    //commandLine 'cmd','/k','cd '+project.rootDir.path + '/app/patch/'
+    //commandLine 'cmd','/c','jar cvf  '+project.rootDir.path + '/app/src/main/assets/patch.jar com/*'
+}
+
+task createPatchDex(dependsOn: createPatchJar) << {
     //workingDir getSdkDir() + '\\build-tools\\' + project.BUILD_TOOLS_VERSION
     // commandLine 'cmd', '/c', 'dx --dex --output ' + project.rootDir + '/app/src/main/assets/patch_dex.jar ' + project.rootDir + '/app/src/main/assets/patch.jar'
 }
 
 task createPatch(dependsOn: createPatchDex) << {
     def file = file('src/main/assets/patch.jar')
+    def fileClass = file('src/main/assets/com/')
     if (file.exists()) {
-        //file.delete()
+        file.delete()
+    }
+    if (fileClass.exists()) {
+        fileClass.deleteDir()
     }
 }

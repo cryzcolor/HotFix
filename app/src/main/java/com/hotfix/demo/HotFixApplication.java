@@ -3,8 +3,8 @@ package com.hotfix.demo;
 import android.app.Application;
 import android.content.Context;
 
-import com.hotfixlib.HotFix;
-import com.hotfixlib.Utils;
+import com.hotfix.HotFix;
+import com.hotfix.Utils;
 
 import java.io.File;
 
