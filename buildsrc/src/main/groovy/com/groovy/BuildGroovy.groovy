@@ -15,7 +15,7 @@ public class BuildGroovy {
      * @param patchConfigFile 修复类的配置文件
      */
     public static void process(String resourcePath, String buildDir, String hackBuildDir, File patchConfigFile) {
-        List<String> invokeClass = getInvokedClass(resourcePath, patchConfigFile);
+        def invokeClass = getInvokedClass(resourcePath, patchConfigFile);
         invokeClass.each { String string ->
             insertCode(buildDir, hackBuildDir, string)
         }
@@ -28,8 +28,8 @@ public class BuildGroovy {
      * @return
      */
     private static List<String> getInvokedClass(String resourcePath, File patchConfigFile) {
-        List<String> invokeClass = new ArrayList<String>();
-        List<String> lines = patchConfigFile.readLines()
+        def invokeClass = new ArrayList<String>()
+        def lines = patchConfigFile.readLines()
         for (s in lines) {
             if (s.startsWith("#")) {
                 continue;

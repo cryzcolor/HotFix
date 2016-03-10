@@ -2,6 +2,7 @@ package com.hotfix;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.util.Log;
 
 import java.io.File;
 
@@ -20,6 +21,7 @@ public class HotFix {
      * @param patchDexFile
      */
     public static void loadPatch(Context context, String patchDexFile) {
+        Log.i("wally", "patchDexFile:" + patchDexFile);
         if (patchDexFile != null && new File(patchDexFile).exists()) {
             try {
                 if (hasDexClassLoader()) {
@@ -55,7 +57,7 @@ public class HotFix {
     private static void injectBelowApiLevel14(Context context, String dexPath)
             throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         PathClassLoader pathClassLoader = (PathClassLoader) context.getClassLoader();
-        DexClassLoader dexClassLoader = new DexClassLoader(dexPath, context.getDir("dex", 0).getAbsolutePath(), dexPath, context.getClassLoader());
+        DexClassLoader dexClassLoader = new DexClassLoader(dexPath, context.getFilesDir().getAbsolutePath(), dexPath, context.getClassLoader());
         ReflectionUtils.setField(pathClassLoader, PathClassLoader.class, "mPaths",
                 Utils.appendArray(ReflectionUtils.getField(pathClassLoader, PathClassLoader.class, "mPaths"), ReflectionUtils.getField(dexClassLoader, DexClassLoader.class,
                         "mRawDexPath")
@@ -85,7 +87,7 @@ public class HotFix {
             throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         PathClassLoader pathClassLoader = (PathClassLoader) context.getClassLoader();
         Object baseDexElements = getDexElements(getPathList(pathClassLoader));
-        DexClassLoader dexClassLoader = new DexClassLoader(dexPath, context.getDir("dex", 0).getAbsolutePath(), dexPath, pathClassLoader);
+        DexClassLoader dexClassLoader = new DexClassLoader(dexPath, context.getFilesDir().getAbsolutePath(), dexPath, pathClassLoader);
         Object newDexElements = getDexElements(getPathList(dexClassLoader));
         Object allDexElements = Utils.combineArray(newDexElements, baseDexElements);
         Object pathList = getPathList(pathClassLoader);

@@ -4,7 +4,7 @@ task processWithJavassist << {
     //项目编译class所在目录
     String classPath = file('build/intermediates/classes/debug')
     String hackBuildPach = project(':hackdex').buildDir.absolutePath + '/intermediates/classes/debug'
-    String resourcePath = file('src/main/java/com/hotfix')
+    String resourcePath = file('src/main/java/com/hotfix/demo')
     def file = file("../patch.properties")
     if (file) {
         com.groovy.BuildGroovy.process(resourcePath, classPath, hackBuildPach, file)
@@ -54,11 +54,13 @@ def getSdkDir = {
 
 task createHack(type: Exec) {
     workingDir getSdkDir() + '\\build-tools\\' + project.BUILD_TOOLS_VERSION
-    commandLine 'cmd', '/c', 'dx --dex --output ' + project.rootDir + '/app/src/main/assets/hack_dex.jar ' + project.rootDir + '/hackdex/build/intermediates/bundles/debug/classes.jar'
+    commandLine 'cmd', '/c', 'dx --dex --output ' + project.rootDir.path + '/app/src/main/assets/hack_dex.jar ' + project.rootDir.path + '/hackdex/build/intermediates/bundles/debug/classes.jar'
 }
 
-task copyPatchClass() << {
+
+task createPatchJar(type: Jar) {
     def file = file("../patch.properties")
+    def classes = []
     if (file) {
         List<String> lines = file.readLines();
         for (line in lines) {
@@ -66,33 +68,22 @@ task copyPatchClass() << {
                 continue;
             }
             def className = line.replace('.', '/') + '.class'
-            def classPath = project.rootDir.path + '/app/build/intermediates/classes/debug/' + className
-            com.groovy.BuildGroovy.copyFile(classPath, project.rootDir.path + '/app/patch/' + className)
+            classes.add(className)
         }
     }
-}
-
-task createPatchJar(type: Jar, dependsOn: copyPatchClass) {
     baseName 'patch'
-    from('patch/com/hotfix/demo/text/')
-    into('app/src/main/assets/')
-    //commandLine 'cmd','/k','d:'
-    //commandLine 'cmd','/k','cd '+project.rootDir.path + '/app/patch/'
-    //commandLine 'cmd','/c','jar cvf  '+project.rootDir.path + '/app/src/main/assets/patch.jar com/*'
+    from('build/intermediates/classes/debug/')
+    include(classes)
 }
 
-task createPatchDex(dependsOn: createPatchJar) << {
-    //workingDir getSdkDir() + '\\build-tools\\' + project.BUILD_TOOLS_VERSION
-    // commandLine 'cmd', '/c', 'dx --dex --output ' + project.rootDir + '/app/src/main/assets/patch_dex.jar ' + project.rootDir + '/app/src/main/assets/patch.jar'
+task createPatchDex(type: Exec, dependsOn: createPatchJar)  {
+    workingDir getSdkDir() + '\\build-tools\\' + project.BUILD_TOOLS_VERSION
+    commandLine 'cmd', '/c', 'dx --dex --output ' + project.rootDir.path + '/app/src/main/assets/patch_dex.jar ' + project.rootDir.path + '/app/build/libs/patch.jar'
 }
 
 task createPatch(dependsOn: createPatchDex) << {
-    def file = file('src/main/assets/patch.jar')
-    def fileClass = file('src/main/assets/com/')
-    if (file.exists()) {
-        file.delete()
-    }
-    if (fileClass.exists()) {
-        fileClass.deleteDir()
+    def fileJar = file('build/libs/patch.jar')
+    if (fileJar.exists()) {
+        //fileJar.delete()
     }
 }

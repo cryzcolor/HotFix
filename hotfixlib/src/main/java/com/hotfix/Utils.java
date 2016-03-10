@@ -23,16 +23,16 @@ public class Utils {
         InputStream inputStream = null;
         FileOutputStream fileOutputStream = null;
         try {
-            File file = new File(context.getDir("dex", Context.MODE_PRIVATE), filename);
+            File file = new File(context.getFilesDir(), filename);
             if (file.exists()) {
                 file.delete();
             }
             inputStream = context.getAssets().open(filename);
             file.createNewFile();
             fileOutputStream = new FileOutputStream(file);
-            byte buffer[] = new byte[1024];
-            int len = 0;
-            while ((len = inputStream.read(buffer)) != 0) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) {
                 fileOutputStream.write(buffer, 0, len);
             }
             fileOutputStream.flush();
@@ -42,14 +42,14 @@ public class Utils {
             if (inputStream != null) {
                 try {
                     inputStream.close();
-                } catch (IOException  e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
             if (fileOutputStream != null) {
                 try {
                     fileOutputStream.close();
-                } catch (IOException  e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
@@ -60,21 +60,23 @@ public class Utils {
     /**
      * 合并数组
      *
-     * @param obj
-     * @param obj2
+     * @param firstArray
+     * @param secondArray
      * @return
      */
-    public static Object combineArray(Object obj, Object obj2) throws IllegalArgumentException {
-        Class componentType = obj.getClass().getComponentType();
-        Class componentType2 = obj2.getClass().getComponentType();
-        if (componentType != componentType2) {
-            throw new IllegalArgumentException("合并双方的类型不相同，需要的是：" + componentType.getName() + ",合并的是：" + componentType2.getName());
+    public static Object combineArray(Object firstArray, Object secondArray) {
+        Class<?> localClass = firstArray.getClass().getComponentType();
+        int firstArrayLength = Array.getLength(firstArray);
+        int allLength = firstArrayLength + Array.getLength(secondArray);
+        Object result = Array.newInstance(localClass, allLength);
+        for (int k = 0; k < allLength; ++k) {
+            if (k < firstArrayLength) {
+                Array.set(result, k, Array.get(firstArray, k));
+            } else {
+                Array.set(result, k, Array.get(secondArray, k - firstArrayLength));
+            }
         }
-        int length = Array.getLength(obj2);
-        Object newInstance = Array.newInstance(componentType, Array.getLength(obj) + length);
-        System.arraycopy(obj2, 0, newInstance, 0, length);
-        System.arraycopy(obj, 0, newInstance, length, Array.getLength(obj));
-        return newInstance;
+        return result;
     }
 
     /**
