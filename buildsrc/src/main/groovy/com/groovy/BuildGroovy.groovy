@@ -5,6 +5,9 @@ import javassist.CtClass
 import javassist.CtMethod
 import javassist.CtNewMethod
 
+/**
+ * groovy脚本
+ */
 public class BuildGroovy {
 
     /**
