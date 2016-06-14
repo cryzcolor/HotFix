@@ -88,10 +88,6 @@ public class Utils {
      */
     public static Object appendArray(Object array, Object item) throws IllegalArgumentException {
         Class componentType = array.getClass().getComponentType();
-        Class itemComponentType = item.getClass().getComponentType();
-        if (componentType != itemComponentType) {
-            throw new IllegalArgumentException("添加的成员类型不正确，需要的是：" + componentType.getName() + ",添加的是：" + itemComponentType.getName());
-        }
         int length = Array.getLength(array);
         Object newInstance = Array.newInstance(componentType, length + 1);
         Array.set(newInstance, 0, item);

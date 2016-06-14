@@ -2,7 +2,6 @@ package com.hotfix;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.util.Log;
 
 import java.io.File;
 
@@ -21,7 +20,6 @@ public class HotFix {
      * @param patchDexFile
      */
     public static void loadPatch(Context context, String patchDexFile) {
-        Log.i("wally", "patchDexFile:" + patchDexFile);
         if (patchDexFile != null && new File(patchDexFile).exists()) {
             try {
                 if (hasDexClassLoader()) {
@@ -119,6 +117,5 @@ public class HotFix {
     private static Object getDexElements(Object obj) throws NoSuchFieldException, IllegalAccessException {
         return ReflectionUtils.getField(obj, obj.getClass(), "dexElements");
     }
-
 
 }
